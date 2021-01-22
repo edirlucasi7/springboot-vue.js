@@ -1,5 +1,5 @@
 <template>
-  <div style="overflow:hidden;">
+  <div>
     <div class="row">
       <div class="items col-md-7">
         <input type="text" class="form-control" v-model="filter" placeholder="O que você está procurando?">
@@ -38,7 +38,7 @@
         <div class="form-group">
           <input type="text" class="form-control" v-model.number="item.price" placeholder="Preço">
         </div>
-        <button class="btn btn-primary btn-block" type="submit" @click="saveItem(item)">Adicionar</button>
+        <button class="btn btn-primary btn-block" type="submit" @click="submit()">Adicionar</button>
       </div>
       <div class="order col-md-5">
         <div class="row">
@@ -64,15 +64,29 @@
           </div>
           <hr/>
         </div>
+        <h5>Forma de pagamento: </h5>
+      <div class="btn-group btn-group-toggle" data-toggle="buttons">
+        <label class="btn btn-secondary">
+         <button class="btn btn-primary btn-block" type="submit" @click="comprarComCartao()">Dinheiro</button>
+        </label>
+        <label class="btn btn-secondary">
+           <button class="btn btn-primary btn-block" type="submit" @click="comprarComCartao()">Cartão</button>
+        </label>
+      </div>
+      <hr>
+      <input type="text" class="form-control" v-model="valorRecebido" placeholder="Valor recebido">
+      <hr/>
+      <input type="text" class="form-control" v-model="troco" placeholder="Troco" disabled>
+      <hr>
       </div>
     </div>
   </div>
 </template>
 
 <script>
-  import 'bootstrap/dist/css/bootstrap.css'
-  import 'font-awesome/css/font-awesome.css'
-  import axios from 'axios/dist/axios'
+import 'bootstrap/dist/css/bootstrap.css'
+import 'font-awesome/css/font-awesome.css'
+import axios from 'axios/dist/axios'  
 
 export default {
   name: 'App',
@@ -85,7 +99,9 @@ export default {
         id: Math.floor(Math.random() * 10000),
         orderItems: [],
         total: 0
-      }
+      },
+      valorRecebido: null,
+      troco: "",
     }
   },
   methods: {
@@ -115,19 +131,40 @@ export default {
         if (this.order.total > 0 && this.order.total >= item.price) this.order.total -= item.price
       }
     },
-    saveItem(item) {
-      const identifier = Math.floor(Math.random() * 10000)
-      this.items.push({ id: identifier, category: item.category, description: item.description, price: item.price })
+    comprarComCartao() { 
+      this.troco = this.order.total
+    },
+    // saveItem(item) {
+    //   const identifier = Math.floor(Math.random() * 10000)
+    //   this.items.push({ id: identifier, category: item.category, description: item.description, price: item.price })
+    // },
+    submit() {
+      axios
+        .post("http://localhost:8081/cadastrarItem", {
+          category: this.item.category,
+          description: this.item.description,
+          price: this.item.price
+        })
+        .then(response => {
+          this.items.push(response.data)
+          this.item.category = ""
+          this.item.description = ""
+          this.item.price = ""
+        })
+        .catch(error => {
+          console.error("There was an error!", error);
+        });
     }
   },
   computed: {
     filteredItems() {
       if (!this.filter) return this.items
       return this.items.filter(item => item.description.toLowerCase().includes(this.filter.toLowerCase()))
-    }
+    },
   },
   created() {
     axios.get("http://localhost:8081/items").then(res => {
+      console.log(res.data)
       this.items = res.data
     });
     // this.items.push({ id: 1, category: 'Bebida', description: 'Água', price: 2 })
