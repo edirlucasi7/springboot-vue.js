@@ -12,8 +12,11 @@
     "bootstrap": "^4.5.3",
     "core-js": "^3.6.5",
     "font-awesome": "^4.7.0",
+    "sweetalert": "^2.1.2",
     "vue": "^3.0.0",
-    "vue-router": "^3.4.9"
+    "vue-router": "^3.4.9",
+    "vue-simple-alert": "^1.1.1",
+    "vue-sweetalert-icons": "^4.3.0"
   },
   "devDependencies": {
     "@vue/cli-plugin-babel": "~4.5.0",

@@ -1,20 +1,44 @@
 <template>
-  <div>
+  <div style="overflow:hidden;">
     <div class="row">
       <div class="items col-md-7">
         <input type="text" class="form-control" v-model="filter" placeholder="O que você está procurando?">
         <br/>
         <div class="list-group">
+          <div class="list-group-item">
+            <div class="row">
+              <div class="col-md-2">
+                <span class="font-weight-bold text-uppercase">Categoria</span>
+              </div>
+              <div class="col-md-4">
+                <span class="font-weight-bold text-uppercase">Descrição</span>
+              </div>
+              <div class="col-md-2">
+                <span class="font-weight-bold text-uppercase">Preço</span>
+              </div>
+              <div class="col-md-2">
+                <span class="font-weight-bold text-uppercase">Editar</span>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="list-group">
           <div class="list-group-item" v-for="item in filteredItems" v-bind:key="item.id">
             <div class="row">
               <div class="col-md-2">
-                <span class="badge badge-info">{{ item.category }}</span>
+                <span href="#" class="badge badge-info">{{ item.category }}</span>
               </div>
-              <div class="col-md-6">
+              <div class="col-md-4">
                 {{ item.description }}
               </div>
               <div class="col-md-2">
                 <span class="badge badge-success">{{ formatMoney(item.price) }}</span>
+              </div>
+               <div class="col-md-2">
+                <button class="btn btn-outline-danger btn-sm" v-on:click="editarItem(item)">
+                  <span class="fa fa-edit"></span>
+                </button>
+                &nbsp;
               </div>
               <div class="col-md-2 text-right">
                 <button class="btn btn-outline-info btn-sm" v-on:click="addItem(item)">
@@ -46,7 +70,7 @@
             <h4>Pedido #{{ order.id }}</h4>
           </div>
           <div class="col-md text-right">
-            <h4>Pedido #{{ formatMoney(order.total) }}</h4>
+            <h4>Total #{{ formatMoney(order.total) }}</h4>
           </div>
         </div>
         <hr/>
@@ -64,20 +88,19 @@
           </div>
           <hr/>
         </div>
-        <h5>Forma de pagamento: </h5>
-      <div class="btn-group btn-group-toggle" data-toggle="buttons">
-        <label class="btn btn-secondary">
-         <button class="btn btn-primary btn-block" type="submit" @click="comprarComCartao()">Dinheiro</button>
-        </label>
-        <label class="btn btn-secondary">
-           <button class="btn btn-primary btn-block" type="submit" @click="comprarComCartao()">Cartão</button>
-        </label>
+        <h5>Formas de pagamento: </h5>
+        <button type="submit" @click="comprarComCartao()" class="btn btn-outline-secondary">Cartão</button> 
+      <hr>
+      <div class="input-group">
+        <input type="text" class="form-control" v-model="order.valorRecebido" placeholder="Valor a receber">
+        <div class="input-group-append">
+          <button type="submit" @click="comprarComDinheiro(order.valorRecebido)" class="btn btn-outline-success">Dinheiro</button>
+        </div>
       </div>
-      <hr>
-      <input type="text" class="form-control" v-model="valorRecebido" placeholder="Valor recebido">
       <hr/>
-      <input type="text" class="form-control" v-model="troco" placeholder="Troco" disabled>
-      <hr>
+       <div class="col-md text-right">
+        <h5>Troco: {{ formatMoney(order.troco) }}</h5>
+      </div>
       </div>
     </div>
   </div>
@@ -86,7 +109,8 @@
 <script>
 import 'bootstrap/dist/css/bootstrap.css'
 import 'font-awesome/css/font-awesome.css'
-import axios from 'axios/dist/axios'  
+import axios from 'axios/dist/axios'
+import swal from 'sweetalert';
 
 export default {
   name: 'App',
@@ -98,10 +122,10 @@ export default {
       order: {
         id: Math.floor(Math.random() * 10000),
         orderItems: [],
+        valorRecebido: "",
+        troco: 0,
         total: 0
       },
-      valorRecebido: null,
-      troco: "",
     }
   },
   methods: {
@@ -121,6 +145,9 @@ export default {
       }
       this.order.total += item.price
     },
+    editarItem(item) {
+      this.item = item;
+    },
     deleteItem(item) {
       const existingItem = this.order.orderItems.find(orderItem => orderItem.item.id === item.id)
       if (existingItem) {
@@ -131,15 +158,27 @@ export default {
         if (this.order.total > 0 && this.order.total >= item.price) this.order.total -= item.price
       }
     },
-    comprarComCartao() { 
-      this.troco = this.order.total
+    comprarComCartao() {
+      swal("Ótimo", "Sua compra com cartão foi concluída com sucesso!", "success")
+      this.order.orderItems = []
+      this.order.troco = ""
+      this.order.total = 0
     },
-    // saveItem(item) {
-    //   const identifier = Math.floor(Math.random() * 10000)
-    //   this.items.push({ id: identifier, category: item.category, description: item.description, price: item.price })
-    // },
+    comprarComDinheiro(valor) {
+      if (valor >= this.order.total) {
+        this.order.troco = Math.abs(this.order.total - valor)
+        this.order.valorRecebido = ""
+        this.order.orderItems = []
+        this.order.total = 0
+        swal("Ótimo", "Sua compra foi concluída com sucesso!", "success")
+      } else {
+        this.order.valorRecebido = ""
+        swal("Atenção", "Valor informado é insuficiente!", "warning")
+      }
+    },
     submit() {
-      axios
+      if(!this.item.id) {
+        axios
         .post("http://localhost:8081/cadastrarItem", {
           category: this.item.category,
           description: this.item.description,
@@ -154,6 +193,21 @@ export default {
         .catch(error => {
           console.error("There was an error!", error);
         });
+      } else {
+        axios.put("http://localhost:8081/atualizarItem", {
+          id: this.item.id,
+          category: this.item.category,
+          description: this.item.description,
+          price: this.item.price
+        })
+        .then(response => {
+          console.log(response.data)
+          swal("Ótimo", "Sua compra foi atualizada com sucesso!", "success")
+        })
+         .catch(error => {
+          console.error("There was an error!", error);
+        });
+      }
     }
   },
   computed: {
@@ -164,12 +218,8 @@ export default {
   },
   created() {
     axios.get("http://localhost:8081/items").then(res => {
-      console.log(res.data)
       this.items = res.data
     });
-    // this.items.push({ id: 1, category: 'Bebida', description: 'Água', price: 2 })
-    // this.items.push({ id: 2, category: 'Comida', description: 'Churrasco', price: 30 })
-    // this.items.push({ id: 3, category: 'Sobremesa', description: 'Pudim', price: 30 })
   }
 };
 </script>

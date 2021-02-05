@@ -1,5 +1,7 @@
 package com.carrinho.server.model;
 
+import java.math.BigDecimal;
+
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
@@ -19,5 +21,5 @@ public class Item {
 	
 	private String category;	
 	private String description;
-	private float price;
+	private BigDecimal price;
 }
