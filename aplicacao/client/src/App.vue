@@ -56,6 +56,9 @@
             </div>
           </div>
         </div>
+        <div class="text-center">
+          <vc-paginacao style="margin-left: 45%;"></vc-paginacao>
+        </div>
         <hr/>
         <div class="form-group"> 
           <input type="text" class="form-control" v-model="item.category" placeholder="Categoria">
@@ -97,18 +100,27 @@
           <hr/>
         </div>
         <h5>Formas de pagamento: </h5>
-        <button type="submit" @click="comprarComCartao()" class="btn btn-outline-secondary">Cartão</button> 
-      <hr>
-      <div class="input-group">
-        <input type="text" class="form-control" v-model="order.valorRecebido" placeholder="Valor a receber">
-        <div class="input-group-append">
-          <button type="submit" @click="comprarComDinheiro(order.valorRecebido)" class="btn btn-outline-success">Dinheiro</button>
+        <div class="input-group">
+          <select class="custom-select" id="inputGroupSelect02">
+            <option selected>Escolha a bandeira..</option>
+            <option value="1">Visa</option>
+            <option value="2">MaterCard</option>
+          </select>
+          <div class="input-group-append">
+            <button type="submit" @click="comprarComCartao()" class="btn btn-outline-secondary">Cartão</button>
         </div>
-      </div>
-      <hr/>
-       <div class="col-md text-right">
-        <h5>Troco: {{ formatMoney(order.troco) }}</h5>
-      </div>
+        </div>
+        <hr>
+        <div class="input-group">
+          <input type="text" class="form-control" v-model="order.valorRecebido" placeholder="Valor a receber">
+          <div class="input-group-append">
+            <button type="submit" @click="comprarComDinheiro(order.valorRecebido)" class="btn btn-outline-success">Dinheiro</button>
+          </div>
+        </div>
+        <hr/>
+        <div class="col-md text-right">
+          <h5>Troco: {{ formatMoney(order.troco) }}</h5>
+        </div>
       </div>
     </div>
   </div>
@@ -120,8 +132,13 @@ import 'font-awesome/css/font-awesome.css'
 import axios from 'axios/dist/axios'
 import swal from 'sweetalert';
 
+import VcPaginacao from './components/paginacao'
+
 export default {
   name: 'App',
+  components: {
+    VcPaginacao
+  },
   data() {
     return {
       items: [],
@@ -240,8 +257,10 @@ export default {
     },
   },
   created() {
-    axios.get("http://localhost:8081/items").then(res => {
-      this.items = res.data
+    axios.get("http://localhost:8081/items")
+    .then(res => {
+      console.log(this.items = res.data.content)
+      this.items = res.data.content
     });
   }
 };
