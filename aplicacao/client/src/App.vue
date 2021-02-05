@@ -10,14 +10,14 @@
               <div class="col-md-2">
                 <span class="font-weight-bold text-uppercase">Categoria</span>
               </div>
-              <div class="col-md-4">
+              <div class="col-md-3">
                 <span class="font-weight-bold text-uppercase">Descrição</span>
               </div>
               <div class="col-md-2">
                 <span class="font-weight-bold text-uppercase">Preço</span>
               </div>
-              <div class="col-md-2">
-                <span class="font-weight-bold text-uppercase">Editar</span>
+              <div class="col-md-3">
+                <span class="font-weight-bold text-uppercase">Editar/Remover</span>
               </div>
             </div>
           </div>
@@ -28,24 +28,28 @@
               <div class="col-md-2">
                 <span href="#" class="badge badge-info">{{ item.category }}</span>
               </div>
-              <div class="col-md-4">
+              <div class="col-md-3">
                 {{ item.description }}
               </div>
               <div class="col-md-2">
                 <span class="badge badge-success">{{ formatMoney(item.price) }}</span>
               </div>
-               <div class="col-md-2">
-                <button class="btn btn-outline-danger btn-sm" v-on:click="editarItem(item)">
+               <div class="col-md-3">
+                <button class="btn btn-outline-primary btn-sm" v-on:click="editarItem(item)">
                   <span class="fa fa-edit"></span>
+                </button>
+                &nbsp;
+                <button class="btn btn-outline-danger btn-sm" v-on:click="deleteItem(item)">
+                  <span class="fa fa-remove"></span>
                 </button>
                 &nbsp;
               </div>
               <div class="col-md-2 text-right">
-                <button class="btn btn-outline-info btn-sm" v-on:click="addItem(item)">
+                <button class="btn btn-outline-info btn-sm" v-on:click="addItemOrder(item)">
                 <span class="fa fa-plus"></span>
                 </button>
                 &nbsp;
-                <button class="btn btn-outline-info btn-sm" v-on:click="deleteItem(item)">
+                <button class="btn btn-outline-info btn-sm" v-on:click="deleteItemOrder(item)">
                 <span class="fa fa-minus"></span>
                 </button>
               </div>
@@ -62,7 +66,11 @@
         <div class="form-group">
           <input type="text" class="form-control" v-model.number="item.price" placeholder="Preço">
         </div>
-        <button class="btn btn-primary btn-block" type="submit" @click="submit()">Adicionar</button>
+        <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+          <button class="btn btn-primary me-md-2" type="submit" @click="submitPost()">Adicionar</button>
+          &nbsp;  
+          <button class="btn btn-primary" type="submit" @click="submitUpdate()">Atualizar</button>
+        </div>
       </div>
       <div class="order col-md-5">
         <div class="row">
@@ -136,7 +144,23 @@ export default {
       });
       return formatter.format(value);
     },
-    addItem(item) {
+    editarItem(item) {
+      this.item = item;
+    },
+    deleteItem(item) {
+      axios
+      .delete("http://localhost:8081/apagarItem/" + item.id)
+      .then(response => {
+        console.log(response.data)
+        var posicao = this.items.indexOf(item);
+        this.items.splice(posicao, 1)
+        swal("Confirmado", "O item foi removido do cardápio!", "info")
+      })
+      .catch(error => {
+        console.error("There was an error!", error);
+      });
+    },
+    addItemOrder(item) {
       const existingItem = this.order.orderItems.find(orderItem => orderItem.item.id === item.id)
       if (!existingItem) {
        this.order.orderItems.push({ quantity: 1, item })
@@ -145,10 +169,7 @@ export default {
       }
       this.order.total += item.price
     },
-    editarItem(item) {
-      this.item = item;
-    },
-    deleteItem(item) {
+    deleteItemOrder(item) {
       const existingItem = this.order.orderItems.find(orderItem => orderItem.item.id === item.id)
       if (existingItem) {
         if (existingItem.quantity > 0) existingItem.quantity--
@@ -176,7 +197,7 @@ export default {
         swal("Atenção", "Valor informado é insuficiente!", "warning")
       }
     },
-    submit() {
+    submitPost() {
       if(!this.item.id) {
         axios
         .post("http://localhost:8081/cadastrarItem", {
@@ -186,14 +207,15 @@ export default {
         })
         .then(response => {
           this.items.push(response.data)
-          this.item.category = ""
-          this.item.description = ""
-          this.item.price = ""
+          this.item = []
         })
         .catch(error => {
           console.error("There was an error!", error);
         });
-      } else {
+      } 
+    },
+    submitUpdate() {
+      if(this.item.id) {
         axios.put("http://localhost:8081/atualizarItem", {
           id: this.item.id,
           category: this.item.category,
@@ -202,9 +224,10 @@ export default {
         })
         .then(response => {
           console.log(response.data)
-          swal("Ótimo", "Sua compra foi atualizada com sucesso!", "success")
+          this.item = []
+          swal("Ótimo", "Seu item foi atualizado com sucesso!", "success")
         })
-         .catch(error => {
+        .catch(error => {
           console.error("There was an error!", error);
         });
       }

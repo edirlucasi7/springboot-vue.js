@@ -23,6 +23,15 @@ public class ItemService {
 		return itemRepository.save(item);
 	}
 	
+	public Item getItemPorId(Integer id) {
+		Optional<Item> optional =  itemRepository.findById(id);
+		if (optional.isPresent()) {
+			Item item = optional.get();
+			return item;
+		}
+		return null;
+	}
+	
 	public String updateItem(Item item) {
 		Optional<Item> optional = itemRepository.findById(item.getId());
 		if(optional.isPresent()) {
@@ -35,6 +44,10 @@ public class ItemService {
 		}
 		
 		return "Não foi possível atualizar. Item não encontrado!";
+	}
+	
+	public void deleteItem(Integer id) {
+		itemRepository.deleteById(id);
 	}
 	
 }
