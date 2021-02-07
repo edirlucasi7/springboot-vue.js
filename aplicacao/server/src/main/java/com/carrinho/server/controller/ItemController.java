@@ -24,9 +24,9 @@ public class ItemController {
 	@Autowired
 	private ItemService itemService;
 	
-	@GetMapping("/items")
+	@GetMapping("/listarItems")
 	public ResponseEntity<Page<Item>> obterItems(@RequestParam(value = "page", defaultValue = "0") Integer page,
-			 									 @RequestParam(value = "size", defaultValue = "4") Integer size) {
+			 									 @RequestParam(value = "size", defaultValue = "5") Integer size) {
 		Page<Item> item = itemService.getAllItem(PageRequest.of(page, size));
 		return ResponseEntity.ok(item);
 	}

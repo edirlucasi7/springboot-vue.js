@@ -104,7 +104,7 @@
           <select class="custom-select" id="inputGroupSelect02">
             <option selected>Escolha a bandeira..</option>
             <option value="1">Visa</option>
-            <option value="2">MaterCard</option>
+            <option value="2">MasterCard</option>
           </select>
           <div class="input-group-append">
             <button type="submit" @click="comprarComCartao()" class="btn btn-outline-secondary">Cartão</button>
@@ -132,7 +132,7 @@ import 'font-awesome/css/font-awesome.css'
 import axios from 'axios/dist/axios'
 import swal from 'sweetalert';
 
-import VcPaginacao from './components/paginacao'
+import VcPaginacao from './components/Paginacao'
 
 export default {
   name: 'App',
@@ -163,7 +163,7 @@ export default {
       return formatter.format(value);
     },
     navegacao(page) {
-      axios.get("http://localhost:8081/items?page="+(page-1))
+      axios.get("http://localhost:8081/listarItems?page="+(page-1))
       .then(res => {
         this.items = res.data.content
         this.paginacao = res.data
@@ -265,7 +265,7 @@ export default {
     },
   },
   created() {
-    axios.get("http://localhost:8081/items")
+    axios.get("http://localhost:8081/listarItems")
     .then(res => {
       this.items = res.data.content
       this.paginacao = res.data
