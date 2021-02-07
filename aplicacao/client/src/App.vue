@@ -57,9 +57,8 @@
           </div>
         </div>
         <div class="text-center">
-          <vc-paginacao style="margin-left: 45%;"></vc-paginacao>
+          <vc-paginacao :source="paginacao" @navegacao="navegacao" style="margin-left: 35%;"></vc-paginacao>
         </div>
-        <hr/>
         <div class="form-group"> 
           <input type="text" class="form-control" v-model="item.category" placeholder="Categoria">
         </div>
@@ -70,7 +69,8 @@
           <input type="text" class="form-control" v-model.number="item.price" placeholder="Preço">
         </div>
         <div class="d-grid gap-2 d-md-flex justify-content-md-end">
-          <button class="btn btn-primary me-md-2" type="submit" @click="submitPost()">Adicionar</button>
+          <button class="btn btn-primary me-md-2" type="submit" 
+           @click="submitPost()">Adicionar</button>
           &nbsp;  
           <button class="btn btn-primary" type="submit" @click="submitUpdate()">Atualizar</button>
         </div>
@@ -144,6 +144,7 @@ export default {
       items: [],
       item: [],
       filter: "",
+      paginacao: {},
       order: {
         id: Math.floor(Math.random() * 10000),
         orderItems: [],
@@ -160,6 +161,13 @@ export default {
         currency: 'BRL'
       });
       return formatter.format(value);
+    },
+    navegacao(page) {
+      axios.get("http://localhost:8081/items?page="+(page-1))
+      .then(res => {
+        this.items = res.data.content
+        this.paginacao = res.data
+      });
     },
     editarItem(item) {
       this.item = item;
@@ -259,10 +267,10 @@ export default {
   created() {
     axios.get("http://localhost:8081/items")
     .then(res => {
-      console.log(this.items = res.data.content)
       this.items = res.data.content
+      this.paginacao = res.data
     });
-  }
+  },
 };
 </script>
 
